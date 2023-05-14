@@ -1,13 +1,14 @@
-package hello.advanced.trace.hellotrace
+package hello.advanced.trace.logtrace
 
 import hello.advanced.trace.TraceId
 import hello.advanced.trace.TraceStatus
 import org.slf4j.LoggerFactory
-import org.springframework.stereotype.Component
 
-@Component
-class HelloTraceV2 {
-    private val logger = LoggerFactory.getLogger(HelloTraceV2::class.java)
+class ThreadLocalLogTrace : LogTrace {
+
+//    private var traceIdHolder: TraceId? =  null  // traceId 동기화, 동시성 이슈 발생
+    private var traceIdHolder: ThreadLocal<TraceId> = ThreadLocal()
+    private val logger = LoggerFactory.getLogger(ThreadLocalLogTrace::class.java)
 
     companion object {
         const val START_PREFIX = "-->"
@@ -15,27 +16,29 @@ class HelloTraceV2 {
         const val EXCEPTION_PREFIX = "<X-"
     }
 
-    fun begin(message: String): TraceStatus {
-        val traceId = TraceId()
+    private fun syncTraceId() {
+        val traceId = traceIdHolder.get()
+        if (traceId == null) {
+            traceIdHolder.set(TraceId())
+            return
+        }
+        traceIdHolder.set(traceId.nextTraceId())
+    }
+
+    override fun begin(message: String): TraceStatus {
+        syncTraceId()
+        val traceId = traceIdHolder.get()
         val startTimeMs = System.currentTimeMillis()
         // 로그 출력
         logger.info("[{}] {}{}", traceId.id, addSpace(START_PREFIX, traceId.level), message)
         return TraceStatus(traceId, startTimeMs, message)
     }
 
-    fun beginSync(beforeTraceId: TraceId, message: String): TraceStatus {
-        val nextTraceId = beforeTraceId.nextTraceId()
-        val startTimeMs = System.currentTimeMillis()
-        // 로그 출력
-        logger.info("[{}] {}{}", nextTraceId.id, addSpace(START_PREFIX, nextTraceId.level), message)
-        return TraceStatus(nextTraceId, startTimeMs, message)
-    }
-
-    fun end(status: TraceStatus) {
+    override fun end(status: TraceStatus) {
         complete(status, null)
     }
 
-    fun exception(status: TraceStatus?, e: Exception) {
+    override fun exception(status: TraceStatus?, e: Exception) {
         complete(status, e)
     }
 
@@ -62,6 +65,17 @@ class HelloTraceV2 {
                 e.toString()
             )
         }
+
+        releaseTraceId()
+    }
+
+    private fun releaseTraceId() {
+        val traceId = traceIdHolder.get()
+        if (traceId.isFirstLevel()) {
+            traceIdHolder.remove() // destroy
+            return
+        }
+        traceIdHolder.set(traceId.previousTraceId())
     }
 
     private fun addSpace(prefix: String, level: Int): String {

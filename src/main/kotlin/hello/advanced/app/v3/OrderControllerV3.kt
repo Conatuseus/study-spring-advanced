@@ -1,24 +1,24 @@
-package hello.advanced.app.v2
+package hello.advanced.app.v3
 
 import hello.advanced.trace.TraceStatus
-import hello.advanced.trace.hellotrace.HelloTraceV2
+import hello.advanced.trace.logtrace.LogTrace
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 import java.lang.Exception
 
 @RestController
-class OrderControllerV2(
-    private val orderService: OrderServiceV2,
-    private val trace: HelloTraceV2
+class OrderControllerV3(
+    private val orderService: OrderServiceV3,
+    private val trace: LogTrace
 ) {
 
-    @GetMapping("/v2/request")
+    @GetMapping("/v3/request")
     fun request(itemId: String): String {
         var status: TraceStatus? = null
 
         try {
             status = trace.begin("OrderController.request()")
-            orderService.orderItem(status.traceId, itemId)
+            orderService.orderItem(itemId)
             trace.end(status)
             return "ok"
         } catch (e: Exception) {

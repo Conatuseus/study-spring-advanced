@@ -11,7 +11,6 @@ class OrderRepositoryV1(
 ) {
 
     fun save(itemId: String) {
-
         var status: TraceStatus? = null
 
         try {

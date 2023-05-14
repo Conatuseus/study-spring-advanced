@@ -14,7 +14,6 @@ class OrderControllerV1(
 
     @GetMapping("/v1/request")
     fun request(itemId: String): String {
-
         var status: TraceStatus? = null
 
         try {

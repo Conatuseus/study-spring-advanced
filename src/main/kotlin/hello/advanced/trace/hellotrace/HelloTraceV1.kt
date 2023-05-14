@@ -45,14 +45,19 @@ class HelloTraceV1 {
         val traceId: TraceId = status!!.traceId
         if (e == null) {
             logger.info(
-                "[{}] {}{} time={}ms", traceId.id,
-                addSpace(COMPLETE_PREFIX, traceId.level), status.message,
+                "[{}] {}{} time={}ms",
+                traceId.id,
+                addSpace(COMPLETE_PREFIX, traceId.level),
+                status.message,
                 resultTimeMs
             )
         } else {
             logger.info(
-                "[{}] {}{} time={}ms ex={}", traceId.id,
-                addSpace(EXCEPTION_PREFIX, traceId.level), status.message, resultTimeMs,
+                "[{}] {}{} time={}ms ex={}",
+                traceId.id,
+                addSpace(EXCEPTION_PREFIX, traceId.level),
+                status.message,
+                resultTimeMs,
                 e.toString()
             )
         }

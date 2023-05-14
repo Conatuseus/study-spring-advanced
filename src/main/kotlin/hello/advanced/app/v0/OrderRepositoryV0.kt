@@ -6,7 +6,6 @@ import org.springframework.stereotype.Repository
 class OrderRepositoryV0 {
 
     fun save(itemId: String) {
-
         if (itemId == "ex") {
             throw IllegalStateException("예외 발생!")
         }

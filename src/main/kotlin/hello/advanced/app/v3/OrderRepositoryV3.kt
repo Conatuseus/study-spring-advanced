@@ -1,21 +1,20 @@
-package hello.advanced.app.v2
+package hello.advanced.app.v3
 
-import hello.advanced.trace.TraceId
 import hello.advanced.trace.TraceStatus
-import hello.advanced.trace.hellotrace.HelloTraceV2
+import hello.advanced.trace.logtrace.LogTrace
 import org.springframework.stereotype.Repository
 import java.lang.Exception
 
 @Repository
-class OrderRepositoryV2(
-    private val trace: HelloTraceV2
+class OrderRepositoryV3(
+    private val trace: LogTrace
 ) {
 
-    fun save(traceId: TraceId, itemId: String) {
+    fun save(itemId: String) {
         var status: TraceStatus? = null
 
         try {
-            status = trace.beginSync(traceId, "OrderRepositoryV1.save()")
+            status = trace.begin("OrderRepository.save()")
             if (itemId == "ex") {
                 throw IllegalStateException("예외 발생!")
             }
